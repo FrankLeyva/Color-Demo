@@ -316,7 +316,7 @@ proposed_palettes <- list(
   district = c("#88BDBC", "#6E9887", "#BECC92", "#FDD692", "#F1BB87", 
               "#F28A80", "#D1A5C6", "#9CADCE", "#B6C5D1", "#D3D9E0"),
   
-  sections = c("#1E88E5","#43A047","#5E35B1","#8E24AA","#F57C00"),
+  sections = c("#1E88E5","#43A047","#330F0A","#8E24AA","#F57C00"),
   
   section_names = c("Bienestar", "Movilidad", "Gobierno", "Infraestructura", "Participacion"),
   
@@ -340,15 +340,15 @@ proposed_palettes <- list(
   ),
   
   gobierno = list(
-    primary = "#5E35B1",
-    secondary = "#B39DDB",
+    primary = "#551911",
+    secondary = "#A27871",
     accent = "#FB8C00",
-    Secuencial = c("#CAB2D6", "#9E9AC8", "#756BB1", "#5E35B1", "#54278F", "#41236C", "#3A1E61"),
-    Categorica = c("#5E35B1", "#7E57C2", "#B39DDB", "#FB8C00", "#FFA726", "#FFCC80"),
-    Divergente = colorRampPalette(c("#DC3545", "#DEE2E6", "#5E35B1"))(9)
+    Secuencial = c("#A27871", "#8A5E57", "#72453E", "#6A3A32", "#551911", "#47150E", "#39110A"),
+    Categorica = c("#551911", "#72453E", "#A27871", "#FB8C00", "#FFA726", "#FFCC80"),
+    Divergente = colorRampPalette(c("#DC3545", "#DEE2E6", "#551911"))(9)
   ),
   
-  infraestructura = list(
+  participacion = list(
     primary = "#F57C00",  # Changed from E64A19 to be more distinct from danger color
     secondary = "#FFCC80",
     accent = "#039BE5",
@@ -357,7 +357,7 @@ proposed_palettes <- list(
     Divergente = colorRampPalette(c("#DC3545", "#DEE2E6", "#F57C00"))(9)
   ),
   
-  participacion = list(
+  infraestructura = list(
     primary = "#8E24AA",
     secondary = "#CE93D8",
     accent = "#00ACC1",
@@ -461,7 +461,7 @@ server <- function(input, output, session) {
       } else if (input$core_palette == "Section Colors" || input$core_palette == "Todas las secciones") {
         return(proposed_palettes$sections)
       } else {
-        return(c("#66C2A5", "#FC8D62", "#8DA0CB", "#E78AC3", "#A6D854")) # Age groups
+        return(c("#463285", "#553EA3", "#674EBC", "#816BC7", "#B7ABDF")) # Age groups
       }
     } else {
       # Paletas de Seccion
