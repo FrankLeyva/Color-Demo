@@ -316,7 +316,7 @@ proposed_palettes <- list(
   district = c("#88BDBC", "#6E9887", "#BECC92", "#FDD692", "#F1BB87", 
               "#F28A80", "#D1A5C6", "#9CADCE", "#B6C5D1", "#D3D9E0"),
   
-  sections = c("#1E88E5","#43A047","#330F0A","#8E24AA","#F57C00"),
+  sections = c("#1E88E5","#43A047","#423629","#423629","#F57C00"),
   
   section_names = c("Bienestar", "Movilidad", "Gobierno", "Infraestructura", "Participacion"),
   
@@ -340,12 +340,12 @@ proposed_palettes <- list(
   ),
   
   gobierno = list(
-    primary = "#551911",
-    secondary = "#A27871",
+    primary = "#423629",
+    secondary = "#8A8178",
     accent = "#FB8C00",
-    Secuencial = c("#A27871", "#8A5E57", "#72453E", "#6A3A32", "#551911", "#47150E", "#39110A"),
-    Categorica = c("#551911", "#72453E", "#A27871", "#FB8C00", "#FFA726", "#FFCC80"),
-    Divergente = colorRampPalette(c("#DC3545", "#DEE2E6", "#551911"))(9)
+    Secuencial = c("#8A8178", "#756C62", "#605A4D", "#4B4238", "#423629", "#372D22", "#2C241C"),
+    Categorica = c("#423629", "#605A4D", "#8A8178", "#FB8C00", "#FFA726", "#FFCC80"),
+    Divergente = colorRampPalette(c("#DC3545", "#DEE2E6", "#423629"))(9)
   ),
   
   participacion = list(
