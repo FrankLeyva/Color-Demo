@@ -316,7 +316,7 @@ proposed_palettes <- list(
   district = c("#88BDBC", "#6E9887", "#BECC92", "#FDD692", "#F1BB87", 
               "#F28A80", "#D1A5C6", "#9CADCE", "#B6C5D1", "#D3D9E0"),
   
-  sections = c("#1E88E5","#43A047","#423629","#423629","#F57C00"),
+  sections = c("#1E88E5","#43A047","#423629","#8E24AA","#F57C00"),
   
   section_names = c("Bienestar", "Movilidad", "Gobierno", "Infraestructura", "Participacion"),
   
