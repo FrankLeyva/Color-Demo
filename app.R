@@ -294,6 +294,112 @@ create_section_nav_bar <- function(section_colors, section_names) {
   return(HTML(html_content))
 }
 
+# Predefined color palettes for quick selection
+predefined_palettes <- list(
+  "Original" = c("#1E88E5","#43A047","#423629","#8E24AA","#F57C00"),
+  "Warm Orange" = c("#FFA058"),
+  "Yellow" = c("#FCEE44"),
+  "Clear Turquoise" = c("#00dbeb"),
+  "Lilac Clear" = c("#d7a4d2"),
+  "Pastel Pink" = c("#ffc9de"),
+  "Blue Green" = c("#00c5c1"),
+  "Strong Pink" = c("#ff769d"),
+  "Neutral Pink" = c("#f3d5d2")
+)
+
+# Create visual palette selector
+create_palette_selector <- function(inputId, palettes, selected_palette = "Original") {
+  palette_cards <- ""
+  
+  for (palette_name in names(palettes)) {
+    palette_colors <- palettes[[palette_name]]
+    
+    # Create color swatches for the palette
+    color_swatches <- ""
+    colors_to_show <- if(length(palette_colors) > 5) palette_colors[1:5] else palette_colors
+    
+    for (color in colors_to_show) {
+      color_swatches <- paste0(color_swatches, 
+        sprintf('<div style="width: 15px; height: 15px; background-color: %s; display: inline-block; margin: 1px;"></div>', color)
+      )
+    }
+    
+    # Add more indicator if there are more than 5 colors
+    if (length(palette_colors) > 5) {
+      color_swatches <- paste0(color_swatches, '<div style="display: inline-block; margin: 1px; font-size: 10px;">...</div>')
+    }
+    
+    # Create the card
+    is_selected <- ifelse(palette_name == selected_palette, "border: 3px solid #007bff;", "border: 1px solid #ddd;")
+    
+    palette_cards <- paste0(palette_cards, sprintf(
+      '<div class="palette-card" data-palette="%s" style="cursor: pointer; padding: 8px; margin: 5px; border-radius: 8px; background: white; %s transition: all 0.2s;">
+        <div style="font-weight: bold; font-size: 12px; margin-bottom: 5px;">%s</div>
+        <div>%s</div>
+      </div>',
+      palette_name, is_selected, palette_name, color_swatches
+    ))
+  }
+  
+  # Return the HTML with JavaScript for interactivity
+  tagList(
+    HTML(sprintf('<div id="%s-container" style="display: flex; flex-wrap: wrap; max-height: 200px; overflow-y: auto;">%s</div>', inputId, palette_cards)),
+    tags$script(HTML(sprintf('
+      $(document).ready(function() {
+        $("#%s-container .palette-card").click(function() {
+          $("#%s-container .palette-card").css("border", "1px solid #ddd");
+          $(this).css("border", "3px solid #007bff");
+          Shiny.setInputValue("%s", $(this).data("palette"), {priority: "event"});
+        });
+      });
+    ', inputId, inputId, inputId)))
+  )
+}
+
+# Create visual color selector for individual sections
+create_section_color_selector <- function(section_name, palettes, default_color = "#1E88E5") {
+  inputId <- paste0(tolower(section_name), "_color_selector")
+  
+  # Create color options from all palettes
+  color_options <- ""
+  
+  for (palette_name in names(palettes)) {
+    palette_colors <- palettes[[palette_name]]
+    
+    for (color in palette_colors) {
+      is_selected <- ifelse(color == default_color, "border: 3px solid #007bff;", "border: 1px solid #ddd;")
+      
+      color_options <- paste0(color_options, sprintf(
+        '<div class="color-option" data-color="%s" data-section="%s" style="width: 25px; height: 25px; background-color: %s; cursor: pointer; margin: 2px; display: inline-block; border-radius: 4px; %s transition: all 0.2s;" title="%s from %s"></div>',
+        color, section_name, color, is_selected, color, palette_name
+      ))
+    }
+  }
+  
+  tagList(
+    div(
+      h6(section_name, style = "margin-bottom: 8px; font-weight: bold;"),
+      div(
+        id = paste0(inputId, "_container"),
+        style = "max-height: 120px; overflow-y: auto; border: 1px solid #ddd; padding: 8px; border-radius: 4px; background: #f8f9fa;",
+        HTML(color_options)
+      ),
+      style = "margin-bottom: 15px;"
+    )
+  )
+}
+
+# Function to get individual section colors with fallbacks
+get_individual_section_colors <- function(bienestar_color, movilidad_color, gobierno_color, infraestructura_color, participacion_color) {
+  return(c(
+    ifelse(is.null(bienestar_color), "#1E88E5", bienestar_color),
+    ifelse(is.null(movilidad_color), "#43A047", movilidad_color),
+    ifelse(is.null(gobierno_color), "#423629", gobierno_color),
+    ifelse(is.null(infraestructura_color), "#8E24AA", infraestructura_color),
+    ifelse(is.null(participacion_color), "#F57C00", participacion_color)
+  ))
+}
+
 # Proposed color palettes with updates
 proposed_palettes <- list(
   # Colores Base
@@ -398,12 +504,33 @@ ui <- fluidPage(
                     selected = "Colores Principales")
       ),
       
-      # New UI control for visualization style when Todas las secciones is selected
+      # Enhanced UI controls for section color customization
       conditionalPanel(
         condition = "input.palette_type == 'Paletas principales' && input.core_palette == 'Todas las secciones'",
         radioButtons("sections_view_style", "Display Style:",
                     choices = c("Nav Cards", "Nav Bar"),
-                    selected = "Nav Cards")
+                    selected = "Nav Cards"),
+        hr(),
+        h5("Color Selection Method:"),
+        radioButtons("color_selection_method", "",
+                    choices = c("Preset Palettes" = "preset", "Individual Colors" = "individual"),
+                    selected = "preset"),
+        
+        # Preset palette selection
+        conditionalPanel(
+          condition = "input.color_selection_method == 'preset'",
+          h6("Choose a Preset Palette:"),
+          div(id = "palette_selector_container"),
+          uiOutput("palette_selector_ui")
+        ),
+        
+        # Individual color selection
+        conditionalPanel(
+          condition = "input.color_selection_method == 'individual'",
+          h6("Choose Colors for Each Section from Palettes:"),
+          div(id = "individual_color_selectors"),
+          uiOutput("individual_color_selectors_ui")
+        )
       ),
       
       # UI control for map visualization when Colores de Distritos is selected
@@ -459,7 +586,32 @@ server <- function(input, output, session) {
       } else if (input$core_palette == "Colores de genero") {
         return(c("#81375D", "#03458C"))  # Pink, Blue
       } else if (input$core_palette == "Section Colors" || input$core_palette == "Todas las secciones") {
-        return(proposed_palettes$sections)
+        # Use the selected section colors based on method
+        if (input$color_selection_method == "individual") {
+          return(get_individual_section_colors(
+            input$bienestar_selected_color, input$movilidad_selected_color, input$gobierno_selected_color, 
+            input$infraestructura_selected_color, input$participacion_selected_color
+          ))
+        } else {
+          # Use preset palette
+          if (!is.null(input$palette_selector) && input$palette_selector %in% names(predefined_palettes)) {
+            selected_palette <- predefined_palettes[[input$palette_selector]]
+            if (input$palette_selector == "Original") {
+              return(selected_palette)
+            } else {
+              # For other palettes, use the 6th color for all sections or distribute colors
+              if (length(selected_palette) >= 5) {
+                # Use first 5 colors for variety, or 6th if specified
+                return(selected_palette[6]) # You mentioned color 6 is main, but this will use same color for all
+              } else {
+                return(selected_palette[1:min(5, length(selected_palette))])
+              }
+            }
+          } else {
+            # Default to original
+            return(predefined_palettes[["Original"]])
+          }
+        }
       } else {
         return(c("#463285", "#553EA3", "#674EBC", "#816BC7", "#B7ABDF")) # Age groups
       }
@@ -682,12 +834,74 @@ server <- function(input, output, session) {
     )
   })
   
+  # Generate individual color selectors UI
+  output$individual_color_selectors_ui <- renderUI({
+    section_names <- c("Bienestar", "Movilidad", "Gobierno", "Infraestructura", "Participacion")
+    default_colors <- c("#1E88E5", "#43A047", "#423629", "#8E24AA", "#F57C00")
+    
+    selectors <- tagList(
+      lapply(1:length(section_names), function(i) {
+        create_section_color_selector(section_names[i], predefined_palettes, default_colors[i])
+      }),
+      # Add JavaScript for color selection
+      tags$script(HTML('
+        $(document).ready(function() {
+          $(".color-option").click(function() {
+            var section = $(this).data("section");
+            var color = $(this).data("color");
+            var container = $(this).parent();
+            
+            // Remove selection from all options in this container
+            container.find(".color-option").css("border", "1px solid #ddd");
+            
+            // Add selection to clicked option
+            $(this).css("border", "3px solid #007bff");
+            
+            // Set Shiny input value
+            var inputName = section.toLowerCase() + "_selected_color";
+            Shiny.setInputValue(inputName, color, {priority: "event"});
+          });
+        });
+      '))
+    )
+    
+    return(selectors)
+  })
+  
+  # Generate palette selector UI
+  output$palette_selector_ui <- renderUI({
+    create_palette_selector("palette_selector", predefined_palettes, "Original")
+  })
+  
   # Section overview output
   output$sections_overview <- renderUI({
     req(input$palette_type == "Paletas principales" && input$core_palette == "Todas las secciones")
     
-    # Get section colors and names
-    section_colors <- proposed_palettes$sections
+    # Get section colors based on selection method
+    if (input$color_selection_method == "individual") {
+      section_colors <- get_individual_section_colors(
+        input$bienestar_selected_color, input$movilidad_selected_color, input$gobierno_selected_color, 
+        input$infraestructura_selected_color, input$participacion_selected_color
+      )
+    } else {
+      # Use preset palette
+      if (!is.null(input$palette_selector) && input$palette_selector %in% names(predefined_palettes)) {
+        selected_palette <- predefined_palettes[[input$palette_selector]]
+        if (input$palette_selector == "Original") {
+          section_colors <- selected_palette
+        } else {
+          # For other palettes, use the 6th color for all sections
+          if (length(selected_palette) >= 6) {
+            section_colors <- rep(selected_palette[6], 5)
+          } else {
+            section_colors <- rep(selected_palette[1], 5)
+          }
+        }
+      } else {
+        section_colors <- predefined_palettes[["Original"]]
+      }
+    }
+    
     section_names <- proposed_palettes$section_names
     
     # Display based on selected style
@@ -709,12 +923,36 @@ server <- function(input, output, session) {
         cat(sprintf("%s: \"%s\"\n", name, palette[[name]]))
       }
     } else if (input$palette_type == "Paletas principales" && input$core_palette == "Todas las secciones") {
-      # For section overview, show all section colors with their names
-      cat("Section Colors:\n")
-      section_colors <- proposed_palettes$sections
-      section_names <- proposed_palettes$section_names
-      for (i in 1:length(section_colors)) {
-        cat(sprintf("%s: \"%s\"\n", section_names[i], section_colors[i]))
+      # For section overview, show current selection
+      if (input$color_selection_method == "individual") {
+        cat("Individual Section Colors:\n")
+        section_names <- proposed_palettes$section_names
+        colors <- c(input$bienestar_selected_color, input$movilidad_selected_color, input$gobierno_selected_color, 
+                   input$infraestructura_selected_color, input$participacion_selected_color)
+        for (i in 1:length(section_names)) {
+          color_val <- ifelse(is.null(colors[i]), "Not selected", colors[i])
+          cat(sprintf("%s: \"%s\"\n", section_names[i], color_val))
+        }
+      } else {
+        cat("Selected Preset Palette:", ifelse(is.null(input$palette_selector), "Original", input$palette_selector), "\n\n")
+        
+        if (!is.null(input$palette_selector) && input$palette_selector != "Original") {
+          # Show the full palette and highlight the main color (6th)
+          full_palette <- predefined_palettes[[input$palette_selector]]
+          cat("Full Palette:\n")
+          cat(sprintf("c(\"%s\")\n\n", paste(full_palette, collapse = "\", \"")))
+          if (length(full_palette) >= 6) {
+            cat("Main Color (6th position):", full_palette[6], "\n")
+            cat("Used for all sections:", full_palette[6])
+          }
+        } else {
+          section_colors <- predefined_palettes[["Original"]]
+          section_names <- proposed_palettes$section_names
+          cat("Section Colors:\n")
+          for (i in 1:length(section_colors)) {
+            cat(sprintf("%s: \"%s\"\n", section_names[i], section_colors[i]))
+          }
+        }
       }
     } else {
       # For other palettes, show vector
@@ -727,7 +965,7 @@ server <- function(input, output, session) {
             cat(sprintf("%s: c(\"%s\")\n", name, paste(palette[[name]], collapse = "\", \"")))
           }
         }
-      }       else {
+      } else {
         cat("Color Vector:\n")
         cat(sprintf("c(\"%s\")", paste(palette, collapse = "\", \"")))
       }
