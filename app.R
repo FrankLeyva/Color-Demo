@@ -297,14 +297,14 @@ create_section_nav_bar <- function(section_colors, section_names) {
 # Predefined color palettes for quick selection
 predefined_palettes <- list(
   "Original" = c("#1E88E5","#43A047","#423629","#8E24AA","#F57C00"),
-  "Warm Orange" = c("#FFA058","#FFF1E7","#FED8BA","#FEC08E","#FEA970","#FD9F5D","#DF864C","#C16D3A","#A3552D","#854122"),
-  "Yellow" = c("#FCEE44","#FFFDE2","#FFF7A5","#FFF175","#FBE857","#FCED58","#D9CD59","#B9AD4C","#9A903F","#7B7333"),
-  "Clear Turquoise" = c("#00dbeb","#E5FBFC","#BFF0F1","#97e6e6","#71dcdc","#64dceb","#52bebe","#3fa1a1","#2f8585","#226a6a"),
-  "Lilac Clear" = c("#d7a4d2","#f8ebf6","#eccfe9","#dfb4dd","#d19ad0","#d6a4d0","#bb89b6","#9f709c","#845581","#6c3d67"),
-  "Pastel Pink" = c("#ffc9de","#fff0f5","#fedce7","#fec8d8","#fdb4c9","#fec9dd","#dfadc0","#c092a3","#a27787","#855c6c"),
-  "Blue Green" = c("#00c5c1","#e0f6f6","#b4e7e6","#87d7d6","#5bc6c5","#3ac5c2","#30a7a4","#288a86","#1f6e6a","#175350"),
-  "Strong Pink" = c("#ff769d","#fee5ec","#fdb8ca","#fd8aa6","#fc6b90","#fc749a","#e15d82","#c5486b","#a93455","#8d2340"),
-  "Neutral Pink" = c("#ead4d2","#fbf6f6","#f3e3e2","#e9cfcc","#e1bbb7","#f3d5d2","#caafac","#ab8b87","#8c6863","#6f4944")
+  "Warm Orange" = c("#FFA058"),
+  "Yellow" = c("#FCEE44"),
+  "Clear Turquoise" = c("#00dbeb"),
+  "Lilac Clear" = c("#d7a4d2"),
+  "Pastel Pink" = c("#ffc9de"),
+  "Blue Green" = c("#00c5c1"),
+  "Strong Pink" = c("#ff769d"),
+  "Neutral Pink" = c("#ead4d2")
 )
 
 # Create visual palette selector
