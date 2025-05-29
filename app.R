@@ -304,7 +304,7 @@ predefined_palettes <- list(
   "Pastel Pink" = c("#ffc9de"),
   "Blue Green" = c("#00c5c1"),
   "Strong Pink" = c("#ff769d"),
-  "Neutral Pink" = c("#ead4d2")
+  "Neutral Pink" = c("#f3d4d1")
 )
 
 # Create visual palette selector
@@ -370,8 +370,8 @@ create_section_color_selector <- function(section_name, palettes, default_color 
       is_selected <- ifelse(color == default_color, "border: 3px solid #007bff;", "border: 1px solid #ddd;")
       
       color_options <- paste0(color_options, sprintf(
-        '<div class="color-option" data-color="%s" data-section="%s" style="width: 25px; height: 25px; background-color: %s; cursor: pointer; margin: 2px; display: inline-block; border-radius: 4px; %s transition: all 0.2s;" title="%s from %s"></div>',
-        color, section_name, color, is_selected, color, palette_name
+        '<div class="color-option" data-color="%s" data-section="%s" data-palette="%s" style="width: 25px; height: 25px; background-color: %s; cursor: pointer; margin: 2px; display: inline-block; border-radius: 4px; %s transition: all 0.2s;" title="%s from %s"></div>',
+        color, section_name, palette_name, color, is_selected, color, palette_name
       ))
     }
   }
@@ -400,8 +400,66 @@ get_individual_section_colors <- function(bienestar_color, movilidad_color, gobi
   ))
 }
 
-# Proposed color palettes with updates
-proposed_palettes <- list(
+# NEW FUNCTION: Generate palette based on base color
+generate_palette_from_color <- function(base_color) {
+  # Convert hex to RGB
+  rgb_vals <- col2rgb(base_color)
+  r <- rgb_vals[1, 1] / 255
+  g <- rgb_vals[2, 1] / 255
+  b <- rgb_vals[3, 1] / 255
+  
+  # Convert to HSV for easier manipulation
+  hsv_vals <- rgb2hsv(r, g, b)
+  h <- hsv_vals[1, 1]
+  s <- hsv_vals[2, 1]
+  v <- hsv_vals[3, 1]
+  
+  # Generate palette structure similar to existing ones
+  palette <- list(
+    primary = base_color,
+    secondary = hsv(h, s * 0.6, min(v + 0.2, 1)),
+    accent = hsv((h + 0.5) %% 1, s * 0.8, min(v + 0.1, 1))
+  )
+  
+  # Generate Sequential palette (7 colors from light to dark)
+  palette$Secuencial <- c(
+    hsv(h, s * 0.2, min(v + 0.4, 1)),
+    hsv(h, s * 0.3, min(v + 0.3, 1)),
+    hsv(h, s * 0.5, min(v + 0.2, 1)),
+    hsv(h, s * 0.7, min(v + 0.1, 1)),
+    base_color,
+    hsv(h, s, max(v - 0.1, 0.2)),
+    hsv(h, s, max(v - 0.3, 0.1))
+  )
+  
+  # Generate Categorica palette (6 colors with variations)
+  palette$Categorica <- c(
+    base_color,
+    hsv((h + 0.15) %% 1, s, v),
+    hsv(h, s * 0.7, min(v + 0.2, 1)),
+    hsv((h + 0.5) %% 1, s * 0.8, v),
+    hsv((h + 0.3) %% 1, s * 0.9, min(v + 0.1, 1)),
+    hsv(h, s * 0.5, min(v + 0.3, 1))
+  )
+  
+  # Generate Divergente palette (9 colors)
+  palette$Divergente <- c(
+    hsv((h + 0.5) %% 1, s, max(v - 0.2, 0.2)),
+    hsv((h + 0.5) %% 1, s * 0.8, max(v - 0.1, 0.3)),
+    hsv((h + 0.5) %% 1, s * 0.6, v),
+    hsv((h + 0.5) %% 1, s * 0.4, min(v + 0.1, 1)),
+    "#DEE2E6",  # Neutral center
+    hsv(h, s * 0.4, min(v + 0.1, 1)),
+    hsv(h, s * 0.6, v),
+    hsv(h, s * 0.8, max(v - 0.1, 0.3)),
+    hsv(h, s, max(v - 0.2, 0.2))
+  )
+  
+  return(palette)
+}
+
+# Base proposed palettes (unchanged structure but will be dynamically updated)
+base_proposed_palettes <- list(
   # Colores Base
   base = list(
     primary = "#0D6EFD",
@@ -426,7 +484,7 @@ proposed_palettes <- list(
   
   section_names = c("Bienestar", "Movilidad", "Gobierno", "Infraestructura", "Participacion"),
   
-  # Section-specific palettes
+  # Section-specific palettes (these will be dynamically updated)
   bienestar = list(
     primary = "#1E88E5",
     secondary = "#90CAF9",
@@ -455,7 +513,7 @@ proposed_palettes <- list(
   ),
   
   participacion = list(
-    primary = "#F57C00",  # Changed from E64A19 to be more distinct from danger color
+    primary = "#F57C00",
     secondary = "#FFCC80",
     accent = "#039BE5",
     Secuencial = c("#FBB582", "#FA954F", "#F57C00", "#E66D00", "#D45F00", "#B65200", "#8F3F00"),
@@ -470,6 +528,72 @@ proposed_palettes <- list(
     Secuencial = c("#D4B9DA", "#C994C7", "#DF65B0", "#DD1C77", "#8E24AA", "#980043", "#67001F"),
     Categorica = c("#8E24AA", "#AB47BC", "#CE93D8", "#00ACC1", "#26C6DA", "#80DEEA"),
     Divergente = colorRampPalette(c("#DC3545", "#DEE2E6", "#8E24AA"))(9)
+  ),
+
+  # AEJ 2025 color palettes
+  Warm_Orange = list(
+    primary ="#FFA058",
+    secondary = "#FEC08E",
+    accent = "#58b7ff",
+    Secuencial = c("#FFF1E7","#FED8BA","#FEC08E","#FEA970","#FD9F5D","#FFA058","#DF864C","#C16D3A","#A3552D","#854122"),
+    Categorica  = c("#FFA058","#58fff4","#5863ff","#fff458","#ff5863","#58b7ff"),
+    Divergente = colorRampPalette(c("#DC3545", "#DEE2E6", "#FFA058"))(9)
+  ),
+  Yellow = list(
+    primary ="#FCEE44",
+    secondary = "#D9CD59",
+    accent = "#9244fc",
+    Secuencial = c("#FFFDE2","#FFF7A5","#FFF175","#FBE857","#FCED58","#FCEE44","#D9CD59","#B9AD4C","#9A903F","#7B7333"),
+    Categorica  = c("#FCEE44","#4452fc","#44aefc","#aefc44","#9244fc","#fc9244"),
+    Divergente = colorRampPalette(c("#DC3545", "#DEE2E6", "#FCEE44"))(9)
+  ),
+  Clear_Turquoise = list(
+    primary ="#00dbeb",
+    secondary = "#97e6e6",
+    accent = "#0065eb",
+    Secuencial = c("#E5FBFC","#BFF0F1","#97e6e6","#71dcdc","#64dceb","#00dbeb","#52bebe","#3fa1a1","#2f8585","#226a6a"),
+    Categorica  = c("#00dbeb","#eb1000","#eb0065","#eb8500","#00eb85","#0065eb"),
+    Divergente = colorRampPalette(c("#DC3545", "#DEE2E6", "#00dbeb"))(9)
+  ),
+  Lilac_clear = list(
+    primary ="#d7a4d2",
+    secondary = "#eccfe9",
+    accent = "#a4d7a9",
+    Secuencial = c("#f8ebf6","#eccfe9","#dfb4dd","#d19ad0","#d6a4d0","#d7a4d2","#bb89b6","#9f709c","#845581","#6c3d67"),
+    Categorica  = c("#d7a4d2","#a4d7a9","#b9d7a4","#a4d7c2","#d7a4b9","#c2a4d7"),
+    Divergente = colorRampPalette(c("#DC3545", "#DEE2E6", "#d7a4d2"))(9)
+  ),
+  Pastel_Pink = list(
+    primary ="#ffc9de",
+    secondary = "#dfadc0",
+    accent = "#c9ffcf",
+    Secuencial = c("#fff0f5","#fedce7","#fec8d8","#fdb4c9","#fec9dd","#ffc9de","#dfadc0","#c092a3","#a27787","#855c6c"),
+    Categorica  = c("#ffc9de","#c9ffea","#c9f9ff","#c9ffcf","#ffeac9","#ffc9f9"),
+    Divergente = colorRampPalette(c("#DC3545", "#DEE2E6", "#ffc9de"))(9)
+  ),
+  Blue_Green = list(
+    primary ="#00c5c1",
+    secondary = "#87d7d6",
+    accent = "#0066c5",
+    Secuencial = c("#e0f6f6","#b4e7e6","#87d7d6","#5bc6c5","#3ac5c2","#00c5c1","#30a7a4","#288a86","#1f6e6a","#175350"),
+    Categorica  = c("#00c5c1","#c50004","#c50066","#c55f00","#00c55f","#0066c5"),
+    Divergente = colorRampPalette(c("#DC3545", "#DEE2E6", "#00c5c1"))(9)
+  ),
+  Strong_Pink = list(
+    primary ="#ff769d",
+    secondary = "#fdb8ca",
+    accent = "#76ffd8",
+    Secuencial = c("#fee5ec","#fdb8ca","#fd8aa6","#fc6b90","#fc749a","#ff769d","#e15d82","#c5486b","#a93455","#8d2340"),
+    Categorica  = c("#ff769d","#76ffd8","#76ff94","#76e1ff","#ff9476","#ff76e1"),
+    Divergente = colorRampPalette(c("#DC3545", "#DEE2E6", "#ff769d"))(9)
+  ),
+  Neutral_Pink = list(
+    primary ="#f3d4d1",
+    secondary = "#f3e3e2",
+    accent = "#d1f0f3",
+    Secuencial = c("#fbf6f6","#f3e3e2","#e9cfcc","#e1bbb7","#ead4d2","#f3d4d1","#caafac","#ab8b87","#8c6863","#6f4944"),
+    Categorica  = c("#f3d4d1","#d1f0f3","#d1f3e5","#d1dff3","#d1f0f3","#d4d1f3"),
+    Divergente = colorRampPalette(c("#DC3545", "#DEE2E6", "#f3d4d1"))(9)
   )
 )
 
@@ -481,7 +605,7 @@ ui <- fluidPage(
     sidebarPanel(
       radioButtons("palette_type", "Tipo de Paleta:",
                   choices = c("Colores Base", "Paletas principales", "Paletas de Seccion"),
-                  selected = "Colores Base"),
+                  selected = "Paletas principales"),
       
       conditionalPanel(
         condition = "input.palette_type == 'Paletas de Seccion'",
@@ -576,6 +700,127 @@ ui <- fluidPage(
 # Define server
 server <- function(input, output, session) {
   
+  # Reactive values to store dynamic palettes
+  proposed_palettes <- reactiveValues()
+  
+  # Initialize with base palettes
+  observe({
+    proposed_palettes$base <- base_proposed_palettes$base
+    proposed_palettes$district <- base_proposed_palettes$district
+    proposed_palettes$sections <- base_proposed_palettes$sections
+    proposed_palettes$section_names <- base_proposed_palettes$section_names
+    proposed_palettes$bienestar <- base_proposed_palettes$bienestar
+    proposed_palettes$movilidad <- base_proposed_palettes$movilidad
+    proposed_palettes$gobierno <- base_proposed_palettes$gobierno
+    proposed_palettes$participacion <- base_proposed_palettes$participacion
+    proposed_palettes$infraestructura <- base_proposed_palettes$infraestructura
+    
+    # Copy AEJ palettes
+    for(palette_name in names(base_proposed_palettes)) {
+      if(palette_name %in% c("Warm_Orange", "Yellow", "Clear_Turquoise", "Lilac_clear", 
+                            "Pastel_Pink", "Blue_Green", "Strong_Pink", "Neutral_Pink")) {
+        proposed_palettes[[palette_name]] <- base_proposed_palettes[[palette_name]]
+      }
+    }
+  })
+  
+  # NEW: Function to map colors to their corresponding AEJ palettes
+  get_aej_palette_from_color <- function(color) {
+    # Create mapping from colors to AEJ palette names
+    color_to_palette_map <- list(
+      "#FFA058" = "Warm_Orange",
+      "#FCEE44" = "Yellow", 
+      "#00dbeb" = "Clear_Turquoise",
+      "#d7a4d2" = "Lilac_clear",
+      "#ffc9de" = "Pastel_Pink",
+      "#00c5c1" = "Blue_Green",
+      "#ff769d" = "Strong_Pink",
+      "#f3d4d1" = "Neutral_Pink"
+    )
+    
+    # Check if the color matches any AEJ palette
+    palette_name <- color_to_palette_map[[color]]
+    
+    if(!is.null(palette_name)) {
+      return(base_proposed_palettes[[palette_name]])
+    } else {
+      # If not an AEJ color, generate palette from the color
+      return(generate_palette_from_color(color))
+    }
+  }
+
+  # NEW: Observer to update section palettes when colors are selected
+  observe({
+    # Only update if we're in individual color selection mode
+    if(!is.null(input$color_selection_method) && input$color_selection_method == "individual") {
+      
+      # Update each section palette when its color changes
+      section_colors <- list(
+        bienestar = input$bienestar_selected_color,
+        movilidad = input$movilidad_selected_color,
+        gobierno = input$gobierno_selected_color,
+        infraestructura = input$infraestructura_selected_color,
+        participacion = input$participacion_selected_color
+      )
+      
+      for(section_name in names(section_colors)) {
+        selected_color <- section_colors[[section_name]]
+        if(!is.null(selected_color)) {
+          # Use AEJ palette if available, otherwise generate from color
+          new_palette <- get_aej_palette_from_color(selected_color)
+          proposed_palettes[[section_name]] <- new_palette
+        }
+      }
+    }
+  })
+  
+  # NEW: Observer to update section palettes when preset palette changes
+  observe({
+    # Only update if we're in preset mode and a palette is selected
+    if(!is.null(input$color_selection_method) && input$color_selection_method == "preset" &&
+       !is.null(input$palette_selector)) {
+      
+      if(input$palette_selector != "Original") {
+        # Find the palette information (check if it's one of the AEJ palettes)
+        selected_palette_info <- NULL
+        
+        # Check if it's one of the AEJ palettes that has full palette structure
+        aej_palettes <- c("Warm_Orange", "Yellow", "Clear_Turquoise", "Lilac_clear", 
+                         "Pastel_Pink", "Blue_Green", "Strong_Pink", "Neutral_Pink")
+        
+        if(input$palette_selector %in% aej_palettes) {
+          selected_palette_info <- base_proposed_palettes[[input$palette_selector]]
+          
+          # Update all section palettes with this information
+          section_names <- c("bienestar", "movilidad", "gobierno", "infraestructura", "participacion")
+          for(section_name in section_names) {
+            proposed_palettes[[section_name]] <- selected_palette_info
+          }
+        } else {
+          # For simple color palettes, generate palettes from the main color
+          palette_colors <- predefined_palettes[[input$palette_selector]]
+          if(length(palette_colors) > 0) {
+            main_color <- palette_colors[1]  # Use first color as main
+            new_palette <- generate_palette_from_color(main_color)
+            
+            # Update all section palettes
+            section_names <- c("bienestar", "movilidad", "gobierno", "infraestructura", "participacion")
+            for(section_name in section_names) {
+              proposed_palettes[[section_name]] <- new_palette
+            }
+          }
+        }
+      } else {
+        # Reset to original palettes
+        proposed_palettes$bienestar <- base_proposed_palettes$bienestar
+        proposed_palettes$movilidad <- base_proposed_palettes$movilidad
+        proposed_palettes$gobierno <- base_proposed_palettes$gobierno
+        proposed_palettes$participacion <- base_proposed_palettes$participacion
+        proposed_palettes$infraestructura <- base_proposed_palettes$infraestructura
+      }
+    }
+  })
+  
   # Get the currently selected palette
   selected_palette <- reactive({
     if (input$palette_type == "Colores Base") {
@@ -599,12 +844,9 @@ server <- function(input, output, session) {
             if (input$palette_selector == "Original") {
               return(selected_palette)
             } else {
-              # For other palettes, use the 6th color for all sections or distribute colors
-              if (length(selected_palette) >= 5) {
-                # Use first 5 colors for variety, or 6th if specified
-                return(selected_palette[6]) # You mentioned color 6 is main, but this will use same color for all
-              } else {
-                return(selected_palette[1:min(5, length(selected_palette))])
+              # For other palettes, use the same color for all sections or use the first color
+              if (length(selected_palette) >= 1) {
+                return(rep(selected_palette[1], 5))
               }
             }
           } else {
@@ -616,18 +858,20 @@ server <- function(input, output, session) {
         return(c("#463285", "#553EA3", "#674EBC", "#816BC7", "#B7ABDF")) # Age groups
       }
     } else {
-      # Paletas de Seccion
+      # Paletas de Seccion - now uses dynamic palettes
       section <- tolower(input$section)
       section_palette_type <- (input$section_palette)
       
+      section_data <- proposed_palettes[[section]]
+      
       if (section_palette_type == "Colores Principales") {
         return(c(
-          proposed_palettes[[section]]$primary,
-          proposed_palettes[[section]]$secondary,
-          proposed_palettes[[section]]$accent
+          section_data$primary,
+          section_data$secondary,
+          section_data$accent
         ))
       } else {
-        return(proposed_palettes[[section]][[section_palette_type]])
+        return(section_data[[section_palette_type]])
       }
     }
   })
@@ -849,6 +1093,7 @@ server <- function(input, output, session) {
           $(".color-option").click(function() {
             var section = $(this).data("section");
             var color = $(this).data("color");
+            var palette = $(this).data("palette");
             var container = $(this).parent();
             
             // Remove selection from all options in this container
@@ -860,6 +1105,10 @@ server <- function(input, output, session) {
             // Set Shiny input value
             var inputName = section.toLowerCase() + "_selected_color";
             Shiny.setInputValue(inputName, color, {priority: "event"});
+            
+            // Also set the palette name for reference
+            var paletteInputName = section.toLowerCase() + "_selected_palette";
+            Shiny.setInputValue(paletteInputName, palette, {priority: "event"});
           });
         });
       '))
@@ -890,9 +1139,9 @@ server <- function(input, output, session) {
         if (input$palette_selector == "Original") {
           section_colors <- selected_palette
         } else {
-          # For other palettes, use the 6th color for all sections
-          if (length(selected_palette) >= 6) {
-            section_colors <- rep(selected_palette[6], 5)
+          # For other palettes, use the first color for all sections
+          if (length(selected_palette) >= 1) {
+            section_colors <- rep(selected_palette[1], 5)
           } else {
             section_colors <- rep(selected_palette[1], 5)
           }
@@ -933,18 +1182,23 @@ server <- function(input, output, session) {
           color_val <- ifelse(is.null(colors[i]), "Not selected", colors[i])
           cat(sprintf("%s: \"%s\"\n", section_names[i], color_val))
         }
+        
+        # Show that section palettes have been updated
+        cat("\n--- Section Palettes Updated ---\n")
+        cat("When you go to 'Paletas de Seccion', each section will now use palettes based on the selected colors.\n")
+        
       } else {
         cat("Selected Preset Palette:", ifelse(is.null(input$palette_selector), "Original", input$palette_selector), "\n\n")
         
         if (!is.null(input$palette_selector) && input$palette_selector != "Original") {
-          # Show the full palette and highlight the main color (6th)
+          # Show the full palette and highlight the main color
           full_palette <- predefined_palettes[[input$palette_selector]]
           cat("Full Palette:\n")
           cat(sprintf("c(\"%s\")\n\n", paste(full_palette, collapse = "\", \"")))
-          if (length(full_palette) >= 6) {
-            cat("Main Color (6th position):", full_palette[6], "\n")
-            cat("Used for all sections:", full_palette[6])
-          }
+          cat("Main Color (1st position):", full_palette[1], "\n")
+          cat("Used for all sections:", full_palette[1])
+          cat("\n\n--- Section Palettes Updated ---\n")
+          cat("All section palettes have been updated based on the selected preset.\n")
         } else {
           section_colors <- predefined_palettes[["Original"]]
           section_names <- proposed_palettes$section_names
@@ -952,6 +1206,50 @@ server <- function(input, output, session) {
           for (i in 1:length(section_colors)) {
             cat(sprintf("%s: \"%s\"\n", section_names[i], section_colors[i]))
           }
+        }
+      }
+    } else if (input$palette_type == "Paletas de Seccion") {
+      # Show current section palette information
+      section <- tolower(input$section)
+      section_data <- proposed_palettes[[section]]
+      
+      cat(sprintf("=== %s Section Palette ===\n", input$section))
+      cat(sprintf("Primary: \"%s\"\n", section_data$primary))
+      cat(sprintf("Secondary: \"%s\"\n", section_data$secondary))
+      cat(sprintf("Accent: \"%s\"\n", section_data$accent))
+      cat("\nSecuencial:\n")
+      cat(sprintf("c(\"%s\")\n", paste(section_data$Secuencial, collapse = "\", \"")))
+      cat("\nCategorica:\n")
+      cat(sprintf("c(\"%s\")\n", paste(section_data$Categorica, collapse = "\", \"")))
+      cat("\nDivergente:\n")
+      cat(sprintf("c(\"%s\")\n", paste(section_data$Divergente, collapse = "\", \"")))
+      
+      # Note if this palette was dynamically generated
+      aej_palette_used <- NULL
+      color_to_palette_map <- list(
+        "#FFA058" = "Warm_Orange",
+        "#FCEE44" = "Yellow", 
+        "#00dbeb" = "Clear_Turquoise",
+        "#d7a4d2" = "Lilac_clear",
+        "#ffc9de" = "Pastel_Pink",
+        "#00c5c1" = "Blue_Green",
+        "#ff769d" = "Strong_Pink",
+        "#f3d4d1" = "Neutral_Pink"
+      )
+      
+      # Check if this section is using an AEJ palette
+      for(color in names(color_to_palette_map)) {
+        if(section_data$primary == color) {
+          aej_palette_used <- color_to_palette_map[[color]]
+          break
+        }
+      }
+      
+      if(!identical(section_data, base_proposed_palettes[[section]])) {
+        if(!is.null(aej_palette_used)) {
+          cat(sprintf("\n*** This section is using the %s AEJ palette ***\n", aej_palette_used))
+        } else {
+          cat("\n*** This palette was dynamically generated based on your color selection ***\n")
         }
       }
     } else {
